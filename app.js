@@ -87,6 +87,36 @@ function renderFeedback(data) {
   addCard(grid, '↗  Cách cải thiện', data.improvement, 'wide'); addCard(grid, '“  Câu trả lời tham khảo', data.example, 'wide example');
   content.append(grid); $('#feedbackPart').textContent = `PART ${part}`; feedback.hidden = false; feedback.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+async function convertToWav(blob) {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) throw new Error('Trình duyệt không chuyển được audio. Hãy thử Safari phiên bản mới hơn.');
+  const context = new AudioContextClass();
+  let decoded;
+  try { decoded = await context.decodeAudioData(await blob.arrayBuffer()); }
+  catch { throw new Error('Không đọc được bản ghi âm từ iPhone. Hãy ghi lại bằng Safari.'); }
+  finally { await context.close().catch(() => {}); }
+  const sampleRate = 16000;
+  const samples = Math.ceil(decoded.duration * sampleRate);
+  const output = new ArrayBuffer(44 + samples * 2);
+  const view = new DataView(output);
+  const writeText = (offset, value) => { for (let index = 0; index < value.length; index++) view.setUint8(offset + index, value.charCodeAt(index)); };
+  writeText(0, 'RIFF'); view.setUint32(4, 36 + samples * 2, true); writeText(8, 'WAVE'); writeText(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+  writeText(36, 'data'); view.setUint32(40, samples * 2, true);
+  const channels = Array.from({ length: decoded.numberOfChannels }, (_, index) => decoded.getChannelData(index));
+  for (let index = 0; index < samples; index++) {
+    const position = index * decoded.sampleRate / sampleRate;
+    const before = Math.min(Math.floor(position), decoded.length - 1);
+    const after = Math.min(before + 1, decoded.length - 1);
+    const fraction = position - before;
+    let sample = 0;
+    for (const channel of channels) sample += channel[before] * (1 - fraction) + channel[after] * fraction;
+    sample = Math.max(-1, Math.min(1, sample / channels.length));
+    view.setInt16(44 + index * 2, sample < 0 ? sample * 32768 : sample * 32767, true);
+  }
+  return new Blob([output], { type: 'audio/wav' });
+}
 document.querySelectorAll('.part-tab').forEach((tab) => tab.addEventListener('click', () => selectPart(Number(tab.dataset.part))));
 question.addEventListener('input', save);
 $('#exampleButton').addEventListener('click', () => { question.value = examples[part]; save(); question.focus(); });
@@ -101,8 +131,13 @@ button.addEventListener('click', async () => {
   if (audioBlob.size > 12 * 1024 * 1024) { showMessage('Bản ghi âm quá lớn. Hãy ghi lại trong tối đa 3 phút.'); return; }
   button.disabled = true; button.innerHTML = 'Đang nghe và nhận xét <span>◌</span>';
   try {
+    const needsWav = /audio\/(mp4|m4a|aac)/i.test(audioBlob.type);
+    if (needsWav) button.innerHTML = 'Đang chuẩn bị audio <span>◌</span>';
+    const uploadBlob = needsWav ? await convertToWav(audioBlob) : audioBlob;
+    if (uploadBlob.size > 12 * 1024 * 1024) throw new Error('Bản ghi âm quá lớn. Hãy ghi lại ngắn hơn.');
+    button.innerHTML = 'Đang nghe và nhận xét <span>◌</span>';
     const form = new FormData(); form.append('part', String(part)); form.append('question', question.value.trim());
-    form.append('audio', audioBlob, audioBlob.type.includes('mp4') ? 'answer.mp4' : 'answer.webm');
+    form.append('audio', uploadBlob, needsWav ? 'answer.wav' : 'answer.webm');
     const response = await fetch('/api/feedback', { method: 'POST', body: form }); const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Không thể nhận nhận xét lúc này.');
     renderFeedback(data);
