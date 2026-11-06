@@ -43,7 +43,10 @@ Trả lời bằng tiếng Việt, riêng câu trả lời mẫu viết bằng t
       const details = await response.json().catch(() => ({}));
       console.error('Gemini audio request failed', { status: response.status, mimeType, size: audio.size, reason: details?.error?.message });
       if (response.status === 429) return json({ error: 'Gemini đang hết lượt trong thời gian này. Vui lòng thử lại sau.' }, 429);
-      if (response.status === 400) return json({ error: 'Gemini chưa đọc được định dạng audio từ thiết bị này. Hãy ghi âm lại và thử lần nữa. (G400)' }, 502);
+      if (response.status === 400) {
+        const reason = String(details?.error?.message || 'Google không cung cấp chi tiết').replace(/\s+/g, ' ').slice(0, 220);
+        return json({ error: `Gemini từ chối yêu cầu (G400, ${mimeType}, ${Math.round(audio.size / 1024)} KB): ${reason}` }, 502);
+      }
       if (response.status === 401 || response.status === 403) return json({ error: 'API key Gemini chưa được cấp quyền cho model này. (G403)' }, 502);
       if (response.status === 402) return json({ error: 'Project Gemini đã hết credit. (G402)' }, 502);
       if (response.status >= 500) return json({ error: 'Gemini đang gặp lỗi tạm thời. Vui lòng thử lại. (G5xx)' }, 502);

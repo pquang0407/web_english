@@ -131,13 +131,12 @@ button.addEventListener('click', async () => {
   if (audioBlob.size > 12 * 1024 * 1024) { showMessage('Bản ghi âm quá lớn. Hãy ghi lại trong tối đa 3 phút.'); return; }
   button.disabled = true; button.innerHTML = 'Đang nghe và nhận xét <span>◌</span>';
   try {
-    const needsWav = /audio\/(mp4|m4a|aac)/i.test(audioBlob.type);
-    if (needsWav) button.innerHTML = 'Đang chuẩn bị audio <span>◌</span>';
-    const uploadBlob = needsWav ? await convertToWav(audioBlob) : audioBlob;
+    button.innerHTML = 'Đang chuẩn bị audio <span>◌</span>';
+    const uploadBlob = await convertToWav(audioBlob);
     if (uploadBlob.size > 12 * 1024 * 1024) throw new Error('Bản ghi âm quá lớn. Hãy ghi lại ngắn hơn.');
     button.innerHTML = 'Đang nghe và nhận xét <span>◌</span>';
     const form = new FormData(); form.append('part', String(part)); form.append('question', question.value.trim());
-    form.append('audio', uploadBlob, needsWav ? 'answer.wav' : 'answer.webm');
+    form.append('audio', uploadBlob, 'answer.wav');
     const response = await fetch('/api/feedback', { method: 'POST', body: form }); const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Không thể nhận nhận xét lúc này.');
     renderFeedback(data);
