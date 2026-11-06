@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f6f2" />
+    <meta name="description" content="Luyện IELTS Speaking theo câu hỏi của bạn và nhận góp ý từ AI." />
+    <title>Speakly — Luyện IELTS Speaking</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Speakly, về trang chủ"><span class="brand-icon">✳</span><span>Speakly<span class="brand-dot">.</span></span></a>
+        <div class="sidebar-label">KHÔNG GIAN LUYỆN TẬP</div>
+        <nav class="nav"><a class="nav-item active" href="#practice"><span>◉</span> Luyện nói <span class="nav-arrow">↗</span></a></nav>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-note"><span class="note-icon">✦</span><strong>Mỗi câu trả lời là một bước tiến.</strong><p>Luyện theo câu hỏi của riêng bạn, nhận góp ý rõ ràng và thử lại.</p></div>
+        <div class="sidebar-footer">Made for better speaking ✳</div>
+      </aside>
+
+      <main id="practice" class="main">
+        <header class="topbar"><span class="eyebrow">YOUR PRACTICE SPACE</span><span class="topbar-tag"><span class="status-dot"></span> IELTS SPEAKING</span></header>
+        <div class="content">
+          <section class="hero"><div class="hero-copy"><div class="hero-kicker">✦ &nbsp; LUYỆN TẬP THEO CÁCH CỦA BẠN</div><h1>Nói tự tin hơn,<br /><em>từng câu một.</em></h1><p>Tự nhập câu hỏi, trả lời theo từng Part và nhận góp ý để biết mình có thể nói tốt hơn ở đâu.</p></div><div class="hero-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="hero-spark">✳</span><span class="hero-bubble">“Let's talk!”</span></div></section>
+
+          <section class="workspace" aria-label="Bài luyện nói">
+            <div class="section-heading"><div><div class="section-kicker">01 / CHỌN DẠNG BÀI</div><h2>Bắt đầu luyện tập</h2></div><span class="step-badge">BƯỚC 1 / 3</span></div>
+            <div class="part-tabs" role="tablist" aria-label="Chọn phần IELTS Speaking">
+              <button class="part-tab selected" data-part="1" role="tab" aria-selected="true"><span class="part-number">01</span><span><strong>Part 1</strong><small>Introduction & Interview</small></span><span class="tab-icon">↗</span></button>
+              <button class="part-tab" data-part="2" role="tab" aria-selected="false"><span class="part-number">02</span><span><strong>Part 2</strong><small>Long Turn · Cue Card</small></span><span class="tab-icon">↗</span></button>
+              <button class="part-tab" data-part="3" role="tab" aria-selected="false"><span class="part-number">03</span><span><strong>Part 3</strong><small>Discussion</small></span><span class="tab-icon">↗</span></button>
+            </div>
+            <div class="part-hint" id="partHint">Part 1 · Trả lời ngắn gọn, tự nhiên trong khoảng 2–3 câu.</div>
+            <div id="partGuide" class="part-guide" aria-live="polite"></div>
+            <div id="timerPanel" class="timer-panel" hidden><div><span class="timer-label" id="timerLabel">CHUẨN BỊ Ý</span><strong id="timerDisplay">01:00</strong></div><div class="timer-actions"><button id="timerStart" type="button">Bắt đầu</button><button id="timerReset" type="button">Đặt lại</button></div></div>
+
+            <div class="fields-grid">
+              <div class="field-block"><div class="field-top"><label for="question">Câu hỏi của bạn <span>*</span></label><span>01 / QUESTION</span></div><textarea id="question" maxlength="1000" placeholder="Ví dụ: What do you like to do in your free time?"></textarea><div class="field-bottom"><button class="example-button" id="exampleButton" type="button">✦ &nbsp; Thử câu hỏi mẫu</button><span id="questionCount">0 / 1000</span></div></div>
+              <div class="field-block"><div class="field-top"><label>Câu trả lời bằng giọng nói <span>*</span></label><span>02 / YOUR VOICE</span></div><div class="recorder"><div class="recorder-icon" aria-hidden="true">♫</div><strong id="recordingTitle">Sẵn sàng ghi âm</strong><p id="recordingHelp">Nhấn bắt đầu, nói bằng tiếng Anh rồi nhấn dừng.</p><div id="recordingTime" class="recording-time">00:00</div><div class="recording-actions"><button id="recordButton" class="record-button" type="button">● &nbsp; Bắt đầu ghi âm</button><button id="discardButton" class="discard-button" type="button" hidden>Ghi lại</button></div><audio id="audioPreview" controls hidden></audio></div><div class="field-bottom"><span class="field-help">Nghe lại trước khi gửi để nhận nhận xét.</span><span id="recordingLength">Tối đa 3 phút</span></div></div>
+            </div>
+            <div class="action-row"><p><span>✧</span> AI sẽ nghe bài nói, chép lại nội dung và góp ý cách trả lời theo từng Part.</p><button id="feedbackButton" class="primary-button" type="button">Nhận nhận xét <span>↗</span></button></div>
+            <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+          </section>
+
+          <section id="feedback" class="feedback" hidden aria-labelledby="feedbackTitle"><div class="feedback-header"><div><div class="section-kicker">02 / AI FEEDBACK</div><h2 id="feedbackTitle">Nhận xét bài nói</h2></div><span id="feedbackPart" class="feedback-part">PART 1</span></div><div id="feedbackContent"></div><button id="retryButton" class="retry-button" type="button">↺ &nbsp; Sửa câu trả lời và thử lại</button></section>
+          <footer class="page-footer">Speakly ✳ <span>Practice makes progress.</span></footer>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
